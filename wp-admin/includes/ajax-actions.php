@@ -2283,7 +2283,7 @@ function wp_ajax_find_posts() {
 				break;
 		}
 
-		if ( '0000-00-00 00:00:00' === $post->post_date ) {
+		if ( '0001-01-01 00:00:00' === $post->post_date ) {
 			$time = '';
 		} else {
 			/* translators: Date format in table columns, see https://www.php.net/manual/datetime.format.php */
