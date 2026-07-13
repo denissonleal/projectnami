@@ -53,7 +53,7 @@ function wp_shrink_dimensions( $width, $height, $wmax = 128, $hmax = 96 ) {
 }
 
 /**
- * Calculated the new dimensions for a downsampled image.
+ * Calculates the new dimensions for a downsampled image.
  *
  * @since 2.0.0
  * @deprecated 3.5.0 Use wp_constrain_dimensions()
@@ -521,16 +521,14 @@ class WP_User_Search {
 	}
 
 	/**
-	 * {@internal Missing Short Description}}
-	 *
-	 * {@internal Missing Long Description}}
+	 * Prepares the user search query (legacy).
 	 *
 	 * @since 2.1.0
 	 * @access public
 	 *
 	 * @global wpdb $wpdb WordPress database abstraction object.
 	 */
-	function prepare_query() {
+	public function prepare_query() {
 		global $wpdb;
 		$this->first_user = ($this->page - 1) * $this->users_per_page;
 
