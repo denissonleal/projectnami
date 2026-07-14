@@ -1623,19 +1623,19 @@ class WP_Query {
 	 *
 	 * @global wpdb $wpdb WordPress database abstraction object.
 	 *
-	 * @param array $q Query variables.
+	 * @param array $query_vars Query variables.
 	 * @return string ORDER BY clause.
 	 */
-	protected function parse_search_order( &$q ) {
+	protected function parse_search_order( &$query_vars ) {
 		global $wpdb;
 
-		if ( $q['search_terms_count'] > 1 ) {
-			$num_terms = count( $q['search_orderby_title'] );
+		if ( $query_vars['search_terms_count'] > 1 ) {
+			$num_terms = count( $query_vars['search_orderby_title'] );
 
 			// If the search terms contain negative queries, don't bother ordering by sentence matches.
 			$like = '';
-			if ( ! preg_match( '/(?:\s|^)\-/', $q['s'] ) ) {
-    			$like = $wpdb->esc_like( $q['s'] );
+			if ( ! preg_match( '/(?:\s|^)\-/', $query_vars['s'] ) ) {
+				$like = '%' . $wpdb->esc_like( $query_vars['s'] ) . '%';
 			}
 
 			$search_orderby = '';
@@ -1644,13 +1644,13 @@ class WP_Query {
 			$search_orderby .= "WHEN PATINDEX('%{$like}%', $wpdb->posts.post_title) > 0 THEN 1 ";
 
             $title_weight = " WHEN ";
- 
+
 		    foreach ( $q['search_terms'] as $term ) {
 			    $term = like_escape( esc_sql( $term ) );
                 $title_weight .= "PATINDEX('%$term%', $wpdb->posts.post_title) + ";
 		    }
             $title_weight .= "0 > 0 THEN 2";
- 
+
             $search_orderby .= $title_weight;
 
 			// sentence match in 'post_content'
@@ -1659,7 +1659,7 @@ class WP_Query {
 			$search_orderby .= ' ELSE 5 END)';
 		} else {
 			// Single word or sentence search.
-			$search_orderby = reset( $q['search_orderby_title'] ) . ' DESC';
+			$search_orderby = reset( $query_vars['search_orderby_title'] ) . ' DESC';
 		}
 
 		return $search_orderby;
