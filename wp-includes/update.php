@@ -180,7 +180,7 @@ function wp_version_check( $extra_stats = array(), $force_check = false ) {
 	);
 
 	if ( is_array( $extra_stats ) ) {
- 		$post_body = array_merge( $post_body, $extra_stats );
+		$post_body = array_merge( $post_body, $extra_stats );
 	}
 
 	// Allow for WP_AUTO_UPDATE_CORE to specify beta/RC/development releases.
@@ -195,7 +195,7 @@ function wp_version_check( $extra_stats = array(), $force_check = false ) {
 	$ssl      = wp_http_supports( array( 'ssl' ) );
 
 	if ( $ssl ) {
- 		$url = set_url_scheme( $url, 'https' );
+		$url = set_url_scheme( $url, 'https' );
 	}
 
 	$doing_cron = wp_doing_cron();
