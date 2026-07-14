@@ -1,5 +1,4 @@
 <?php
-require_once(dirname(__FILE__) . '/translations.php');
 /**
  * WordPress database access abstraction class.
  *
@@ -44,7 +43,7 @@ define( 'ARRAY_N', 'ARRAY_N' );
  * By default, WordPress uses this class to instantiate the global $wpdb object, providing
  * access to the WordPress database.
  *
- * It is possible to replace this class with your own by setting the $wpdb global variable
+ * It is possible to replace the global instance with your own by setting the $wpdb global variable
  * in wp-content/db.php file to your class. The wpdb class will still be included, so you can
  * extend it or simply use your own.
  *
@@ -54,8 +53,6 @@ define( 'ARRAY_N', 'ARRAY_N' );
  */
 #[AllowDynamicProperties]
 class wpdb {
-
-	var $last_query_total_rows = null;
 
 	/**
 	 * Whether to show SQL/DB errors.
@@ -139,8 +136,6 @@ class wpdb {
 	 * @var stdClass[]|null
 	 */
 	public $last_result;
-
-    var $query_statement_resource;
 
 	/**
 	 * Database query result.
@@ -242,7 +237,6 @@ class wpdb {
 	 * WordPress table prefix.
 	 *
 	 * You can set this to have multiple WordPress installations in a single database.
-	 * The second reason is for possible security precautions.
 	 *
 	 * @since 2.5.0
 	 *
@@ -473,7 +467,7 @@ class wpdb {
 	 *
 	 * @since 3.0.0
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	public $blogs;
 
@@ -482,7 +476,7 @@ class wpdb {
 	 *
 	 * @since 5.1.0
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	public $blogmeta;
 
@@ -491,7 +485,7 @@ class wpdb {
 	 *
 	 * @since 3.0.0
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	public $registration_log;
 
@@ -500,7 +494,7 @@ class wpdb {
 	 *
 	 * @since 3.0.0
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	public $signups;
 
@@ -509,7 +503,7 @@ class wpdb {
 	 *
 	 * @since 3.0.0
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	public $site;
 
@@ -518,7 +512,7 @@ class wpdb {
 	 *
 	 * @since 3.0.0
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	public $sitecategories;
 
@@ -527,7 +521,7 @@ class wpdb {
 	 *
 	 * @since 3.0.0
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	public $sitemeta;
 
@@ -565,15 +559,6 @@ class wpdb {
 	 * @var string
 	 */
 	public $collate;
-
-	/**
-	 * Whether to use mysql_real_escape_string
-	 *
-	 * @since 2.8.0
-	 * @access public
-	 * @var bool
-	 */
-	var $real_escape = false;
 
 	/**
 	 * Database Username.
@@ -771,11 +756,8 @@ class wpdb {
 		$dbhost
 	) {
 		if ( WP_DEBUG && WP_DEBUG_DISPLAY ) {
- 			$this->show_errors();
+			$this->show_errors();
 		}
-
-		// Use the `mysqli` extension if it exists unless `WP_USE_EXT_MYSQL` is defined as true.
-        $this->use_mysqli = false;
 
 		$this->dbuser     = $dbuser;
 		$this->dbpassword = $dbpassword;
@@ -844,7 +826,7 @@ class wpdb {
 	 *
 	 * @since 3.5.0
 	 *
-	 * @param string $name  The private member to unset
+	 * @param string $name The private member to unset.
 	 */
 	public function __unset( $name ) {
 		unset( $this->$name );
@@ -933,12 +915,12 @@ class wpdb {
 	 */
 	public function set_charset( $dbh, $charset = null, $collate = null ) {
 		if ( ! isset( $charset ) ) {
- 			$charset = $this->charset;
+			$charset = $this->charset;
 		}
 		if ( ! isset( $collate ) ) {
- 			$collate = $this->collate;
+			$collate = $this->collate;
 		}
-		if ( $this->has_cap( 'collation', $dbh ) && !empty( $charset ) && false ) {
+		if ( $this->has_cap( 'collation' ) && ! empty( $charset ) ) {
 			$set_charset_succeeded = true;
 
 			if ( function_exists( 'mysql_set_charset' ) && $this->has_cap( 'set_charset', $dbh ) ) {
@@ -958,7 +940,7 @@ class wpdb {
 	/**
 	 * Changes the current SQL mode, and ensures its WordPress compatibility.
 	 *
-	 * If no modes are passed, it will ensure the current MySQL server modes are compatible.
+	 * If no modes are passed, it will ensure the current SQL server modes are compatible.
 	 *
 	 * @since 3.9.0
 	 *
@@ -1325,11 +1307,11 @@ class wpdb {
 	 */
 	public function _escape( $data ) {
 		if ( is_array( $data ) ) {
-			foreach ( (array) $data as $k => $v ) {
+			foreach ( $data as $k => $v ) {
 				if ( is_array( $v ) ) {
-					$data[$k] = $this->_escape( $v );
+					$data[ $k ] = $this->_escape( $v );
 				} else {
-					$data[$k] = $this->_real_escape( $v );
+					$data[ $k ] = $this->_real_escape( $v );
 				}
 			}
 		} else {
@@ -1354,10 +1336,10 @@ class wpdb {
 	 */
 	public function escape( $data ) {
 		if ( func_num_args() === 1 && function_exists( '_deprecated_function' ) ) {
- 			_deprecated_function( __METHOD__, '3.6.0', 'wpdb::prepare() or esc_sql()' );
+			_deprecated_function( __METHOD__, '3.6.0', 'wpdb::prepare() or esc_sql()' );
 		}
 		if ( is_array( $data ) ) {
-			foreach ( (array) $data as $k => $v ) {
+			foreach ( $data as $k => $v ) {
 				if ( is_array( $v ) ) {
 					$data[ $k ] = $this->escape( $v, 'recursive' );
 				} else {
@@ -1365,7 +1347,7 @@ class wpdb {
 				}
 			}
 		} else {
-			$data = $this->_weak_escape( $data );
+			$data = $this->_weak_escape( $data, 'internal' );
 		}
 
 		return $data;
@@ -1475,7 +1457,7 @@ class wpdb {
 	 */
 	public function prepare( $query, ...$args ) {
 		if ( is_null( $query ) ) {
- 			return;
+			return;
 		}
 
 		/*
@@ -1828,7 +1810,7 @@ class wpdb {
 		$EZSQL_ERROR[] = array( 'query' => $this->last_query, 'error_str' => $str );
 
 		if ( $this->suppress_errors ) {
- 			return false;
+			return false;
 		}
 
 		$caller = $this->get_caller();
@@ -2161,7 +2143,7 @@ class wpdb {
 
 		$message .= '<p>' . sprintf(
 			/* translators: %s: Support forums URL. */
-				__( 'If you are unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href="%s">WordPress support forums</a>.' ),
+			__( 'If you are unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href="%s">WordPress support forums</a>.' ),
 			__( 'https://wordpress.org/support/forums/' )
 		) . "</p>\n";
 

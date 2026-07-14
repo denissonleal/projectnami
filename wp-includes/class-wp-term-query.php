@@ -445,8 +445,7 @@ class WP_Term_Query {
 			$_orderby = 'term_id';
 		}
 
-        $orderby_fields = '';
-		$orderby = $this->parse_orderby( $_orderby, $orderby_fields );
+		$orderby = $this->parse_orderby( $_orderby );
 
 		if ( $orderby ) {
 			$orderby = "ORDER BY $orderby";
@@ -471,14 +470,11 @@ class WP_Term_Query {
 		$exclude_tree = $args['exclude_tree'];
 		$include      = $args['include'];
 
-		$inclusions = '';
 		if ( ! empty( $include ) ) {
 			$exclude      = '';
 			$exclude_tree = '';
 			$inclusions   = implode( ',', wp_parse_id_list( $include ) );
-		}
 
-		if ( ! empty( $inclusions ) ) {
 			$this->sql_clauses['where']['inclusions'] = 't.term_id IN ( ' . $inclusions . ' )';
 		}
 
