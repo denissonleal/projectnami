@@ -3824,6 +3824,9 @@ class wpdb {
 		// Strip everything between parentheses except nested selects.
 		$query = preg_replace( '/\((?!\s*select)[^(]*?\)/is', '()', $query );
 
+		// Strip any leading SET STATEMENT statements.
+		$query = preg_replace( '/^SET STATEMENT.+?\sFOR\s+/is', '', $query );
+
 		// Quickly match most common queries.
 		if ( preg_match(
 			'/^\s*(?:'
@@ -3853,7 +3856,7 @@ class wpdb {
 		 */
 		if ( preg_match( '/^\s*SHOW\s+(?:TABLE\s+STATUS|(?:FULL\s+)?TABLES)\s+(?:WHERE\s+Name\s+)?LIKE\s*("|\')((?:[\\\\0-9a-zA-Z$_.-]|[\xC2-\xDF][\x80-\xBF])+)%?\\1/is', $query, $maybe ) ) {
 			return str_replace( '\\_', '_', $maybe[2] );
-        }
+		}
 
 		// Big pattern for the rest of the table-related queries.
 		if ( preg_match(

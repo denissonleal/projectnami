@@ -730,14 +730,17 @@ function upgrade_all() {
 	if ( $wp_current_db_version < 25824 )
 		upgrade_370();
 
-	if ( $wp_current_db_version < 26148 )
+	if ( $wp_current_db_version < 26148 ) {
 		upgrade_372();
+	}
 
-	if ( $wp_current_db_version < 26691 )
+	if ( $wp_current_db_version < 26691 ) {
 		upgrade_380();
+	}
 
-	if ( $wp_current_db_version < 29630 )
+	if ( $wp_current_db_version < 29630 ) {
 		upgrade_400();
+	}
 
 	if ( $wp_current_db_version < 30133 )
 		upgrade_410();
@@ -745,20 +748,25 @@ function upgrade_all() {
 	if ( $wp_current_db_version < 30134 )
 		upgrade_410a();
 
-	if ( $wp_current_db_version < 33055 )
+	if ( $wp_current_db_version < 33055 ) {
 		upgrade_430();
+	}
 
-	if ( $wp_current_db_version < 33056 )
+	if ( $wp_current_db_version < 33056 ) {
 		upgrade_431();
+	}
 
-	if ( $wp_current_db_version < 35700 )
+	if ( $wp_current_db_version < 35700 ) {
 		upgrade_440();
+	}
 
-	if ( $wp_current_db_version < 36686 )
+	if ( $wp_current_db_version < 36686 ) {
 		upgrade_450();
+	}
 
-	if ( $wp_current_db_version < 37965 )
+	if ( $wp_current_db_version < 37965 ) {
 		upgrade_460();
+	}
 
 	if ( $wp_current_db_version < 38590 )
 		upgrade_470();
@@ -805,6 +813,11 @@ function upgrade_all() {
 	if ( $wp_current_db_version < 58975 ) {
 		upgrade_670();
 	}
+
+	if ( $wp_current_db_version < 60421 ) {
+		upgrade_682();
+	}
+
 	maybe_disable_link_manager();
 
 	maybe_disable_automattic_widgets();
@@ -816,6 +829,7 @@ function upgrade_all() {
 /**
  * Execute changes made in WordPress 3.7.
  *
+ * @ignore
  * @since 3.7.0
  *
  * @global int $wp_current_db_version The old (current) database version.
@@ -831,6 +845,7 @@ function upgrade_370() {
 /**
  * Execute changes made in WordPress 3.7.2.
  *
+ * @ignore
  * @since 3.7.2
  *
  * @global int $wp_current_db_version The old (current) database version.
@@ -846,6 +861,7 @@ function upgrade_372() {
 /**
  * Execute changes made in WordPress 3.8.0.
  *
+ * @ignore
  * @since 3.8.0
  *
  * @global int $wp_current_db_version The old (current) database version.
@@ -861,6 +877,7 @@ function upgrade_380() {
 /**
  * Execute changes made in WordPress 4.0.0.
  *
+ * @ignore
  * @since 4.0.0
  *
  * @global int $wp_current_db_version The old (current) database version.
@@ -878,6 +895,7 @@ function upgrade_400() {
 		}
 	}
 }
+
 /**
  * Execute changes made in WordPress 4.1.0 as required by PN.
  *
@@ -907,6 +925,7 @@ function upgrade_410a() {
 /**
  * Executes changes made in WordPress 4.3.0.
  *
+ * @ignore
  * @since 4.3.0
  *
  * @global int  $wp_current_db_version The old (current) database version.
@@ -930,6 +949,7 @@ function upgrade_430() {
 /**
  * Executes comments changes made in WordPress 4.3.0.
  *
+ * @ignore
  * @since 4.3.0
  *
  * @global wpdb $wpdb WordPress database abstraction object.
@@ -952,6 +972,7 @@ function upgrade_430_fix_comments() {
 /**
  * Execute changes as required by PN post WP 4.3.0.
  *
+ * @ignore
  * @since 4.3.1
  */
 function upgrade_431() {
@@ -967,6 +988,7 @@ function upgrade_431() {
 /**
  * Executes changes made in WordPress 4.4.0.
  *
+ * @ignore
  * @since 4.4.0
  *
  * @global int  $wp_current_db_version The old (current) database version.
@@ -991,6 +1013,31 @@ function upgrade_440() {
 			$role->remove_cap( 'add_users' );
 		}
 	}
+}
+
+/**
+ * Executes changes made in WordPress 4.5.0.
+ *
+ * @ignore
+ * @since 4.5.0
+ *
+ * @global int  $wp_current_db_version The old (current) database version.
+ * @global wpdb $wpdb                  WordPress database abstraction object.
+ */
+function upgrade_450() {
+	global $wp_current_db_version, $wpdb;
+
+	if ( $wp_current_db_version < 36180 ) {
+		wp_clear_scheduled_hook( 'wp_maybe_auto_update' );
+	}
+
+	// Remove unused email confirmation options, moved to usermeta.
+	if ( $wp_current_db_version < 36679 && is_multisite() ) {
+		$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE '[0-9]%[_]new[_]email'" );
+	}
+
+	// Remove unused user setting for wpLink.
+	delete_user_setting( 'wplink' );
 }
 
 /**
@@ -1303,6 +1350,7 @@ function upgrade_650() {
 		wp_set_option_autoload_values( $autoload );
 	}
 }
+
 /**
  * Executes changes made in WordPress 6.7.0.
  *
@@ -1333,6 +1381,42 @@ function upgrade_670() {
 		wp_set_options_autoload( $options, false );
 	}
 }
+
+/**
+ * Executes changes made in WordPress 6.8.2.
+ *
+ * @ignore
+ * @since 6.8.2
+ *
+ * @global int $wp_current_db_version The old (current) database version.
+ */
+function upgrade_682() {
+	global $wp_current_db_version;
+
+	if ( $wp_current_db_version < 60421 ) {
+		// Upgrade Ping-O-Matic and Twingly to use HTTPS.
+		$ping_sites_value = get_option( 'ping_sites' );
+		$ping_sites_value = explode( "\n", $ping_sites_value );
+		$ping_sites_value = array_map(
+			function ( $url ) {
+				$url = trim( $url );
+				$url = sanitize_url( $url );
+				if (
+					str_ends_with( trailingslashit( $url ), '://rpc.pingomatic.com/' )
+					|| str_ends_with( trailingslashit( $url ), '://rpc.twingly.com/' )
+				) {
+					$url = set_url_scheme( $url, 'https' );
+				}
+				return $url;
+			},
+			$ping_sites_value
+		);
+		$ping_sites_value = array_filter( $ping_sites_value );
+		$ping_sites_value = implode( "\n", $ping_sites_value );
+		update_option( 'ping_sites', $ping_sites_value );
+	}
+}
+
 /**
  * Executes network-level upgrade routines.
  *
@@ -1367,8 +1451,9 @@ function upgrade_network() {
 		while( $rows = $wpdb->get_results( "SELECT meta_key, meta_value FROM {$wpdb->sitemeta} ORDER BY meta_id OFFSET $start ROWS FETCH NEXT 20 ROWS ONLY" ) ) {
 			foreach( $rows as $row ) {
 				$value = $row->meta_value;
-				if ( !@unserialize( $value ) )
+				if ( ! @unserialize( $value ) ) {
 					$value = stripslashes( $value );
+				}
 				if ( $value !== $row->meta_value ) {
 					update_site_option( $row->meta_key, $value );
 				}
@@ -1445,7 +1530,6 @@ function upgrade_network() {
  * already present. It doesn't rely on MySQL's "IF NOT EXISTS" statement, but chooses
  * to query all tables first and then run the SQL statement creating the table.
  *
- * @ignore
  * @since 1.0.0
  *
  * @global wpdb $wpdb WordPress database abstraction object.
@@ -1454,7 +1538,7 @@ function upgrade_network() {
  * @param string $create_ddl SQL statement to create table.
  * @return bool True on success or if the table already exists. False on failure.
  */
-function maybe_create_table($table_name, $create_ddl) {
+function maybe_create_table( $table_name, $create_ddl ) {
 	global $wpdb;
 
 	$query = $wpdb->prepare( "SELECT name FROM sysobjects WHERE type='u' AND name = '$table_name'" );
@@ -1464,7 +1548,7 @@ function maybe_create_table($table_name, $create_ddl) {
 	}
 
 	// Didn't find it, so try to create it.
-	$wpdb->query($create_ddl);
+	$wpdb->query( $create_ddl );
 
 	// We cannot directly tell that whether this succeeded!
 	if ( $wpdb->get_var( $query ) === $table_name ) {
@@ -1485,7 +1569,7 @@ function maybe_create_table($table_name, $create_ddl) {
  * @param string $index Index name to drop.
  * @return true True, when finished.
  */
-function drop_index($table, $index) {
+function drop_index( $table, $index ) {
 	global $wpdb;
 
 	$wpdb->hide_errors();
@@ -1505,7 +1589,6 @@ function drop_index($table, $index) {
 /**
  * Adds an index to a specified table.
  *
- * @ignore
  * @since 1.0.1
  *
  * @global wpdb $wpdb WordPress database abstraction object.
@@ -1514,7 +1597,7 @@ function drop_index($table, $index) {
  * @param string $index Database table index column.
  * @return true True, when done with execution.
  */
-function add_clean_index($table, $index) {
+function add_clean_index( $table, $index ) {
 	global $wpdb;
 
 	drop_index($table, $index);
@@ -1528,7 +1611,6 @@ function add_clean_index($table, $index) {
  *
  * @since 1.3.0
  *
- * @ignore
  * @global wpdb $wpdb WordPress database abstraction object.
  *
  * @param string $table_name  Database table name.
@@ -1597,7 +1679,6 @@ function __get_option( $setting ) { // phpcs:ignore WordPress.NamingConventions.
 /**
  * Filters for content to remove unnecessary slashes.
  *
- * @ignore
  * @since 1.5.0
  *
  * @param string $content The content to modify.
@@ -1635,18 +1716,19 @@ function deslash( $content ) {
  *
  * @global wpdb $wpdb WordPress database abstraction object.
  *
- * @param string|array $queries Optional. The query to run. Can be multiple queries
- *                              in an array, or a string of queries separated by
- *                              semicolons. Default empty.
- * @param bool         $execute Optional. Whether or not to execute the query right away.
- *                              Default true.
+ * @param string[]|string $queries Optional. The query to run. Can be multiple queries
+ *                                 in an array, or a string of queries separated by
+ *                                 semicolons. Default empty string.
+ * @param bool            $execute Optional. Whether or not to execute the query right away.
+ *                                 Default true.
  * @return string[] Strings containing the results of the various update queries.
  */
 function dbDelta( $queries = '', $execute = true ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid
 	global $wpdb;
 
-	if ( in_array( $queries, array( '', 'all', 'blog', 'global', 'ms_global' ), true ) )
+	if ( in_array( $queries, array( '', 'all', 'blog', 'global', 'ms_global' ), true ) ) {
 		$queries = wp_get_db_schema( $queries );
+	}
 
 	// Separate individual queries into an array.
 	if ( !is_array($queries) ) {
@@ -1953,7 +2035,6 @@ function make_site_theme() {
 /**
  * Translate user level to user role name.
  *
- * @ignore
  * @since 2.0.0
  *
  * @param int $level User level.
@@ -1984,7 +2065,6 @@ function translate_level_to_role( $level ) {
 /**
  * Checks the version of the installed MySQL binary.
  *
- * @ignore
  * @since 2.1.0
  *
  * @global wpdb $wpdb WordPress database abstraction object.
@@ -2034,7 +2114,6 @@ function maybe_disable_link_manager() {
  * Runs before the schema is upgraded.
  *
  * @since 2.9.0
- * @ignore
  *
  * @global int  $wp_current_db_version The old (current) database version.
  * @global wpdb $wpdb                  WordPress database abstraction object.
@@ -2108,29 +2187,4 @@ function wp_should_upgrade_global_tables() {
 	 * @param bool $should_upgrade Whether to run the upgrade routines on global tables.
 	 */
 	return apply_filters( 'wp_should_upgrade_global_tables', $should_upgrade );
-}
-
-/**
- * Executes changes made in WordPress 4.5.0.
- *
- * @ignore
- * @since 4.5.0
- *
- * @global int  $wp_current_db_version The old (current) database version.
- * @global wpdb $wpdb                  WordPress database abstraction object.
- */
-function upgrade_450() {
-	global $wp_current_db_version, $wpdb;
-
-	if ( $wp_current_db_version < 36180 ) {
-		wp_clear_scheduled_hook( 'wp_maybe_auto_update' );
-	}
-
-	// Remove unused email confirmation options, moved to usermeta.
-	if ( $wp_current_db_version < 36679 && is_multisite() ) {
-		$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE '[0-9]%[_]new[_]email'" );
-	}
-
-	// Remove unused user setting for wpLink.
-	delete_user_setting( 'wplink' );
 }

@@ -1644,7 +1644,7 @@ function delete_expired_transients( $force_db = false ) {
 
 	$dbtransients = $wpdb->get_results( $wpdb->prepare(
 		"SELECT TOP 1000 * from {$wpdb->options}
-			WHERE option_name LIKE %s 
+			WHERE option_name LIKE %s
 			AND option_value < %d",
 		$wpdb->esc_like( '_transient_timeout_' ) . '%',
 		time()
@@ -1662,7 +1662,7 @@ function delete_expired_transients( $force_db = false ) {
 
 	$dbsitetransients = $wpdb->get_results( $wpdb->prepare(
 		"SELECT TOP 1000 * from {$wpdb->options}
-			WHERE option_name LIKE %s 
+			WHERE option_name LIKE %s
 			AND option_value < %d",
 		$wpdb->esc_like( '_site_transient_timeout_' ) . '%',
 		time()
@@ -1678,11 +1678,11 @@ function delete_expired_transients( $force_db = false ) {
 		return;
 	}
 
-	if ( is_multisite() && is_main_site() && is_main_network() ) {
+	if ( is_main_site() && is_main_network() ) {
 		// Multisite stores site transients in the sitemeta table.
 		$mssitetransients = $wpdb->get_results( $wpdb->prepare(
 			"SELECT TOP 1000 * from {$wpdb->sitemeta}
-				WHERE meta_key LIKE %s 
+				WHERE meta_key LIKE %s
 				AND meta_value < %d",
 			$wpdb->esc_like( '_site_transient_timeout_' ) . '%',
 			time()
@@ -1722,7 +1722,7 @@ function wp_user_settings() {
 	}
 
 	if ( ! is_user_member_of_blog() ) {
-		return;
+		return null;
 	}
 
 	$settings = (string) get_user_option( 'user-settings', $user_id );

@@ -21,7 +21,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 2.3.0
  *
- * @global string $wp_version       Used to check against the newest WordPress version.
  * @global wpdb   $wpdb             WordPress database abstraction object.
  * @global string $wp_local_package Locale code of the package.
  *
@@ -201,11 +200,11 @@ function wp_version_check( $extra_stats = array(), $force_check = false ) {
 	$doing_cron = wp_doing_cron();
 
 	$options = array(
-		'timeout' => $doing_cron ? 30 : 3,
+		'timeout'    => $doing_cron ? 30 : 3,
 		'user-agent' => 'WordPress/' . wp_get_wp_version() . '; ' . home_url( '/' ),
-		'headers' => array(
+		'headers'    => array(
 			'wp_install' => $wp_install,
-			'wp_blog' => home_url( '/' )
+			'wp_blog'    => home_url( '/' ),
 		),
 		'body' => $post_body,
 	);
@@ -226,7 +225,7 @@ function wp_version_check( $extra_stats = array(), $force_check = false ) {
 	}
 
 	$response = wp_remote_post( $url, $options );
-	
+
 	if ( $ssl && is_wp_error( $response ) ) {
 		wp_trigger_error(
 			__FUNCTION__,
@@ -331,8 +330,6 @@ function wp_version_check( $extra_stats = array(), $force_check = false ) {
  * if WordPress isn't installing.
  *
  * @since 2.3.0
- *
- * @global string $wp_version The WordPress version string.
  *
  * @param array $extra_stats Extra statistics to report to the WordPress.org API.
  */
