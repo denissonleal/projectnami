@@ -755,7 +755,7 @@ class WP_Term_Query {
         }
 
 		// Beginning of the string is on a new line to prevent leading whitespace. See https://core.trac.wordpress.org/ticket/56841.
-		$this->request = 
+		$this->request =
 			"{$this->sql_clauses['select']}
 			{$this->sql_clauses['from']}
 			{$where}
@@ -783,8 +783,9 @@ class WP_Term_Query {
 		}
 
 		if ( $args['cache_results'] ) {
-			$cache_key = $this->generate_cache_key( $args, $this->request );
-			$cache     = wp_cache_get( $cache_key, 'term-queries' );
+			$cache_key    = $this->generate_cache_key( $args, $this->request );
+			$last_changed = wp_cache_get_last_changed( 'terms' );
+			$cache        = wp_cache_get_salted( $cache_key, 'term-queries', $last_changed );
 
 			if ( false !== $cache ) {
 				if ( 'ids' === $_fields ) {
@@ -812,7 +813,7 @@ class WP_Term_Query {
 		if ( 'count' === $_fields ) {
 			$count = $wpdb->get_var( $this->request ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			if ( $args['cache_results'] ) {
-				wp_cache_set( $cache_key, $count, 'term-queries' );
+				wp_cache_set_salted( $cache_key, $count, 'term-queries', $last_changed );
 			}
 			return $count;
 		}
@@ -820,10 +821,13 @@ class WP_Term_Query {
 		$terms = $wpdb->get_results( $this->request ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 		if ( empty( $terms ) ) {
+			$this->terms = array();
+
 			if ( $args['cache_results'] ) {
-				wp_cache_add( $cache_key, array(), 'term-queries' );
+				wp_cache_set_salted( $cache_key, $this->terms, 'term-queries', $last_changed );
 			}
-			return array();
+
+			return $this->terms;
 		}
 
 		$term_ids = wp_list_pluck( $terms, 'term_id' );
@@ -855,7 +859,8 @@ class WP_Term_Query {
 					if ( is_array( $children ) ) {
 						foreach ( $children as $child_id ) {
 							$child = get_term( $child_id, $term->taxonomy );
-							if ( $child->count ) {
+
+							if ( $child instanceof WP_Term && $child->count ) {
 								continue 2;
 							}
 						}
@@ -905,7 +910,7 @@ class WP_Term_Query {
 		}
 
 		if ( $args['cache_results'] ) {
-			wp_cache_add( $cache_key, $term_cache, 'term-queries' );
+			wp_cache_set_salted( $cache_key, $term_cache, 'term-queries', $last_changed );
 		}
 
 		$this->terms = $this->format_terms( $term_objects, $_fields );
@@ -921,19 +926,16 @@ class WP_Term_Query {
 	 * @param string $orderby_raw Alias for the field to order by.
 	 * @return string|false Value to used in the ORDER clause. False otherwise.
 	 */
-	protected function parse_orderby( $orderby_raw, &$orderby_fields ) {
+	protected function parse_orderby( $orderby_raw ) {
 		$_orderby           = strtolower( $orderby_raw );
 		$maybe_orderby_meta = false;
 
 		if ( in_array( $_orderby, array( 'term_id', 'name', 'slug', 'term_group' ), true ) ) {
 			$orderby = "t.$_orderby";
-			$orderby_fields = ", t.$_orderby";
 		} elseif ( in_array( $_orderby, array( 'count', 'parent', 'taxonomy', 'term_taxonomy_id', 'description' ), true ) ) {
 			$orderby = "tt.$_orderby";
-			$orderby_fields = ", tt.$_orderby";
 		} elseif ( 'term_order' === $_orderby ) {
 			$orderby = 'tr.term_order';
-			$orderby_fields = ', tr.term_order';
 		} elseif ( 'include' === $_orderby && ! empty( $this->query_vars['include'] ) ) {
 			$include = implode( ',', wp_parse_id_list( $this->query_vars['include'] ) );
 			$orderby = "FIELD( t.term_id, $include )";
@@ -944,10 +946,8 @@ class WP_Term_Query {
 			$orderby = '';
 		} elseif ( empty( $_orderby ) || 'id' === $_orderby || 'term_id' === $_orderby ) {
 			$orderby = 't.term_id';
-			$orderby_fields = ', t.term_id';
 		} else {
 			$orderby = 't.name';
-			$orderby_fields = ', t.name';
 
 			// This may be a value of orderby related to meta.
 			$maybe_orderby_meta = true;
@@ -1182,8 +1182,8 @@ class WP_Term_Query {
 		// Replace wpdb placeholder in the SQL statement used by the cache key.
 		$sql = $wpdb->remove_placeholder_escape( $sql );
 
-		$key          = md5( serialize( $cache_args ) . $sql );
-		$last_changed = wp_cache_get_last_changed( 'terms' );
-		return "get_terms:$key:$last_changed";
+		$key = md5( serialize( $cache_args ) . $sql );
+
+		return "get_terms:$key";
 	}
 }
