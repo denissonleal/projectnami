@@ -921,7 +921,7 @@ class wpdb {
 			$collate = $this->collate;
 		}
 		if ( $this->has_cap( 'collation' ) && ! empty( $charset ) ) {
-			$set_charset_succeeded = true;
+			$set_charset_succeeded = false;
 
 			if ( function_exists( 'mysql_set_charset' ) && $this->has_cap( 'set_charset', $dbh ) ) {
 				$set_charset_succeeded = mysql_set_charset( $charset, $dbh );
