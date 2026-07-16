@@ -445,7 +445,8 @@ class WP_Term_Query {
 			$_orderby = 'term_id';
 		}
 
-		$orderby = $this->parse_orderby( $_orderby );
+		$orderby_fields = '';
+		$orderby = $this->parse_orderby( $_orderby, $orderby_fields );
 
 		if ( $orderby ) {
 			$orderby = "ORDER BY $orderby";
@@ -926,16 +927,19 @@ class WP_Term_Query {
 	 * @param string $orderby_raw Alias for the field to order by.
 	 * @return string|false Value to used in the ORDER clause. False otherwise.
 	 */
-	protected function parse_orderby( $orderby_raw ) {
+	protected function parse_orderby( $orderby_raw, &$orderby_fields ) {
 		$_orderby           = strtolower( $orderby_raw );
 		$maybe_orderby_meta = false;
 
 		if ( in_array( $_orderby, array( 'term_id', 'name', 'slug', 'term_group' ), true ) ) {
 			$orderby = "t.$_orderby";
+			$orderby_fields = ", t.$_orderby";
 		} elseif ( in_array( $_orderby, array( 'count', 'parent', 'taxonomy', 'term_taxonomy_id', 'description' ), true ) ) {
 			$orderby = "tt.$_orderby";
+			$orderby_fields = ", tt.$_orderby";
 		} elseif ( 'term_order' === $_orderby ) {
 			$orderby = 'tr.term_order';
+			$orderby_fields = ', tr.term_order';
 		} elseif ( 'include' === $_orderby && ! empty( $this->query_vars['include'] ) ) {
 			$include = implode( ',', wp_parse_id_list( $this->query_vars['include'] ) );
 			$orderby = "FIELD( t.term_id, $include )";
@@ -946,8 +950,10 @@ class WP_Term_Query {
 			$orderby = '';
 		} elseif ( empty( $_orderby ) || 'id' === $_orderby || 'term_id' === $_orderby ) {
 			$orderby = 't.term_id';
+			$orderby_fields = ', t.term_id';
 		} else {
 			$orderby = 't.name';
+			$orderby_fields = ', t.name';
 
 			// This may be a value of orderby related to meta.
 			$maybe_orderby_meta = true;
