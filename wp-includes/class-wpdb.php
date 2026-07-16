@@ -4162,7 +4162,19 @@ class wpdb {
 	 * @return string|null Version number on success, null on failure.
 	 */
 	public function db_version() {
-		return $this->get_var( "SELECT convert(varchar,SERVERPROPERTY('productversion')) as 'version'" );
+		if ( ! $this->dbh ) {
+			return null;
+		}
+
+		$stmt = sqlsrv_query( $this->dbh, "SELECT CONVERT(varchar(128), SERVERPROPERTY('ProductVersion')) AS version" );
+
+		if ( false === $stmt ) {
+			return null;
+		}
+
+		$row = sqlsrv_fetch_object( $stmt );
+
+		return ( $row && isset( $row->version ) ) ? $row->version : null;
 	}
 
 	/**
@@ -4173,7 +4185,19 @@ class wpdb {
 	 * @return null|string Null on failure, edition name on success.
 	 */
 	public function db_edition() {
-		return $this->get_var( "SELECT convert(varchar,SERVERPROPERTY('edition')) as 'edition'" );
+		if ( ! $this->dbh ) {
+			return null;
+		}
+
+		$stmt = sqlsrv_query( $this->dbh, "SELECT CONVERT(varchar(128), SERVERPROPERTY('Edition')) AS edition" );
+
+		if ( false === $stmt ) {
+			return null;
+		}
+
+		$row = sqlsrv_fetch_object( $stmt );
+
+		return ( $row && isset( $row->edition ) ) ? $row->edition : null;
 	}
 
 	/**
