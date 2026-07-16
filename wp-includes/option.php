@@ -1678,7 +1678,7 @@ function delete_expired_transients( $force_db = false ) {
 		return;
 	}
 
-	if ( is_main_site() && is_main_network() ) {
+	if ( is_multisite() && is_main_site() && is_main_network() ) {
 		// Multisite stores site transients in the sitemeta table.
 		$mssitetransients = $wpdb->get_results( $wpdb->prepare(
 			"SELECT TOP 1000 * from {$wpdb->sitemeta}
