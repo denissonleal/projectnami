@@ -1675,7 +1675,7 @@ class WP_Query {
 	 * @param string $orderby Alias for the field to order by.
 	 * @return string|false Table-prefixed value to used in the ORDER clause. False otherwise.
 	 */
-	protected function parse_orderby( $orderby ) {
+	protected function parse_orderby( $orderby, &$orderbyfields ) {
 		global $wpdb;
 
 		// Used to filter values.
@@ -2507,7 +2507,7 @@ class WP_Query {
 			if ( is_array( $query_vars['orderby'] ) ) {
 				foreach ( $query_vars['orderby'] as $_orderby => $order ) {
 					$orderby = addslashes_gpc( urldecode( $_orderby ) );
-					$parsed  = $this->parse_orderby( $orderby );
+					$parsed  = $this->parse_orderby( $orderby, $orderbyfields );
 
 					if ( ! $parsed ) {
 						continue;
@@ -2522,7 +2522,7 @@ class WP_Query {
 				$query_vars['orderby'] = addslashes_gpc( $query_vars['orderby'] );
 
 				foreach ( explode( ' ', $query_vars['orderby'] ) as $i => $orderby ) {
-					$parsed = $this->parse_orderby( $orderby );
+					$parsed = $this->parse_orderby( $orderby, $orderbyfields );
 					// Only allow certain values for safety.
 					if ( ! $parsed ) {
 						continue;

@@ -1,4 +1,6 @@
 <?php
+require_once(dirname(__FILE__) . '/translations.php');
+
 /**
  * WordPress database access abstraction class.
  *
