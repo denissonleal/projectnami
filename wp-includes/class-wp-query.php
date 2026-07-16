@@ -1941,6 +1941,7 @@ class WP_Query {
 		$join             = '';
 		$search           = '';
 		$groupby          = '';
+		$orderbyfields    = '';
 		$post_status_join = false;
 		$page             = 1;
 
