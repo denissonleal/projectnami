@@ -188,7 +188,7 @@ if ( ! function_exists( 'wp_install_defaults' ) ) :
 		$wpdb->insert(
 			$wpdb->terms,
 			array(
-				'term_id'    => $cat_id,
+				// 'term_id'    => $cat_id,
 				'name'       => $cat_name,
 				'slug'       => $cat_slug,
 				'term_group' => 0,
