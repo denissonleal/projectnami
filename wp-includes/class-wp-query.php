@@ -1372,7 +1372,7 @@ class WP_Query {
 			sort( $query_vars['tag__and'] );
 			$tax_query[] = array(
 				'taxonomy' => 'post_tag',
-				'terms'    => $q['tag__and'],
+				'terms'    => $query_vars['tag__and'],
 				'operator' => 'AND',
 			);
 		}
@@ -2398,12 +2398,16 @@ class WP_Query {
 		}
 
 		if ( ! empty( $query_vars['author__not_in'] ) ) {
-			if ( is_array( $query_vars['author__not_in'] ) ) {
-				$query_vars['author__not_in'] = array_unique( array_map( 'absint', $query_vars['author__not_in'] ) );
-				sort( $query_vars['author__not_in'] );
+			$author__not_in_id_list = wp_parse_id_list( $query_vars['author__not_in'] );
+			if ( count( $author__not_in_id_list ) > 0 ) {
+				sort( $author__not_in_id_list );
+				$where .= sprintf(
+					" AND {$wpdb->posts}.post_author NOT IN (%s) ",
+					implode( ',', $author__not_in_id_list )
+				);
+				/** Update the query var for stable cache key generation in {@see self::generate_cache_key()}. */
+				$query_vars['author__not_in'] = $author__not_in_id_list;
 			}
-			$author__not_in = implode( ',', (array) $query_vars['author__not_in'] );
-			$where         .= " AND {$wpdb->posts}.post_author NOT IN ($author__not_in) ";
 		} elseif ( ! empty( $query_vars['author__in'] ) ) {
 			if ( is_array( $query_vars['author__in'] ) ) {
 				$query_vars['author__in'] = array_unique( array_map( 'absint', $query_vars['author__in'] ) );
