@@ -5332,7 +5332,7 @@ function wp_insert_post( $postarr, $wp_error = false, $fire_after_hooks = true )
  */
 function wp_update_post( $postarr = array(), $wp_error = false, $fire_after_hooks = true ) {
 	if ( is_object( $postarr ) ) {
-		// Non-escaped post was passed.
+ 		// Non-escaped post was passed.
 		$postarr = get_object_vars( $postarr );
 		$postarr = wp_slash( $postarr );
 	}
@@ -5342,7 +5342,7 @@ function wp_update_post( $postarr = array(), $wp_error = false, $fire_after_hook
 
 	if ( is_null( $post ) ) {
 		if ( $wp_error ) {
-			return new WP_Error( 'invalid_post', __( 'Invalid post ID.' ) );
+ 			return new WP_Error( 'invalid_post', __( 'Invalid post ID.' ) );
 		}
 		return 0;
 	}
@@ -5354,9 +5354,9 @@ function wp_update_post( $postarr = array(), $wp_error = false, $fire_after_hook
 	if ( isset( $postarr['post_category'] ) && is_array( $postarr['post_category'] )
 		&& count( $postarr['post_category'] ) > 0
 	) {
-		$post_cats = $postarr['post_category'];
+ 		$post_cats = $postarr['post_category'];
 	} else {
-		$post_cats = $post['post_category'];
+ 		$post_cats = $post['post_category'];
 	}
 
 	// Drafts shouldn't be assigned a date unless explicitly done so by the user.
@@ -5364,16 +5364,16 @@ function wp_update_post( $postarr = array(), $wp_error = false, $fire_after_hook
 		&& in_array( $post['post_status'], array( 'draft', 'pending', 'auto-draft' ), true )
 		&& empty( $postarr['edit_date'] ) && ( '0001-01-01 00:00:00' === $post['post_date_gmt'] )
 	) {
-		$clear_date = true;
+ 		$clear_date = true;
 	} else {
-		$clear_date = false;
+ 		$clear_date = false;
 	}
 
 	// Merge old and new fields with new fields overwriting old ones.
-	$postarr                  = array_merge( $post, $postarr );
+	$postarr                  = array_merge($post, $postarr);
 	$postarr['post_category'] = $post_cats;
 	if ( $clear_date ) {
-		$postarr['post_date']     = current_time( 'mysql' );
+		$postarr['post_date']     = current_time('mysql');
 		$postarr['post_date_gmt'] = '';
 	}
 
@@ -5567,7 +5567,7 @@ function wp_unique_post_slug( $slug, $post_id, $post_status, $post_type, $post_p
 	if ( in_array( $post_status, array( 'draft', 'pending', 'auto-draft' ), true )
 		|| ( 'inherit' === $post_status && 'revision' === $post_type ) || 'user_request' === $post_type
 	) {
-		return $slug;
+ 		return $slug;
 	}
 
 	/**
@@ -5596,7 +5596,7 @@ function wp_unique_post_slug( $slug, $post_id, $post_status, $post_type, $post_p
 
 	$feeds = $wp_rewrite->feeds;
 	if ( ! is_array( $feeds ) ) {
-		$feeds = array();
+ 		$feeds = array();
 	}
 
 	if ( 'attachment' === $post_type ) {
@@ -5628,7 +5628,7 @@ function wp_unique_post_slug( $slug, $post_id, $post_status, $post_type, $post_p
 		}
 	} elseif ( is_post_type_hierarchical( $post_type ) ) {
 		if ( 'nav_menu_item' === $post_type ) {
-			return $slug;
+ 			return $slug;
 		}
 
 		/*
